@@ -1,0 +1,27 @@
+<?xml version="1.0" encoding="utf-8"?>
+<resources>
+    <color name="purple_200">#FFBB86FC</color>
+    <color name="purple_500">#FF6200EE</color>
+    <color name="purple_700">#FF3700B3</color>
+    <color name="teal_200">#FF03DAC5</color>
+    <color name="teal_700">#FF018786</color>
+    <color name="black">#FF000000</color>
+    <color name="white">#FFFFFFFF</color>
+
+
+    <color name="appBG">#10141a</color>
+    <color name="firstScreenBG">#131921</color>
+    <color name="secondScreenBG">#181e28</color>
+    <color name="thirdScreenBG">#1c222c</color>
+
+    <color name="thirdScreenBtn">#262f5a</color>
+    <color name="firstScreenBtn">#39449f</color>
+    <color name="customGray">#323943</color>
+    <color name="heading">#526874</color>
+
+    <color name="a">#44303a</color>
+    <color name="b">#7c708e</color>
+    <color name="c">#596c8e</color>
+
+    <color name="green">#95b888</color>
+</resources>
