@@ -12,6 +12,7 @@ import androidx.compose.ui.ExperimentalComposeUiApi
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.geometry.Offset
 import androidx.compose.ui.geometry.Size
+import androidx.compose.ui.graphics.Brush
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.graphics.StrokeCap
 import androidx.compose.ui.graphics.drawscope.Stroke
@@ -32,38 +33,56 @@ fun CircularSlider(
     stroke: Float = 20f,
     cap: StrokeCap = StrokeCap.Round,
     touchStroke: Float = 50f,
-    thumbColor: Color = Color.Blue,
-    progressColor: Color = Color.Black,
-    backgroundColor: Color = Color.LightGray,
-    debug: Boolean = false,
-    onChange: ((Float)->Unit)? = null
+    onChange: ((Float) -> Unit)? = null
 ) {
     var width by remember { mutableStateOf(0) }
     var height by remember { mutableStateOf(0) }
-    var angle by remember { mutableStateOf(-60f) }
-    var last by remember { mutableStateOf(0f) }
-    var down by remember { mutableStateOf(false) }
+    var angle by remember { mutableStateOf(200f) }
+    var nearTheThumbIndicator by remember { mutableStateOf(false) }
     var radius by remember { mutableStateOf(0f) }
     var center by remember { mutableStateOf(Offset.Zero) }
     var appliedAngle by remember { mutableStateOf(0f) }
 
     LaunchedEffect(key1 = angle) {
-        var a = angle
-        a += 60
-        if (a <= 0f) {
-            a += 360
+
+        // Ensure angle stays within 0 to 360 degrees
+        angle = angle % 360f
+        if (angle < 0) angle += 360f
+
+        appliedAngle = angle
+        onChange?.invoke(angle / 360f) // Normalize angle to a range of 0.0 to 1.0
+        /*
+        if (angle < 0.0f && angle > -90f) {
+            angle = 0.0f
+        } else if (angle < 0.0f && angle < -90f) {
+            angle = 180.0f
+        } else if (angle >= 180f) {
+            angle = 180f
         }
-        a = a.coerceIn(0f, 300f)
-        if (last < 150f && a == 300f) {
-            a = 0f
-        }
-        last = a
-        appliedAngle = a
+
+        appliedAngle = angle
+
+        onChange?.invoke(angle / 180f)
+*/
     }
 
-    LaunchedEffect(key1 = appliedAngle) {
-        onChange?.invoke(appliedAngle / 300f)
-    }
+    val gradient = Brush.sweepGradient(
+        colors = listOf(
+            Color(0xFFFFAD85), // Adjusted color
+            Color(0xFFFF6F61), // Adjusted color
+            Color(0xFFFFAD85)  // Adjusted color
+        )
+    )
+
+    /*
+        val gradient = Brush.horizontalGradient(
+            colorStops = arrayOf(
+                0.0f to Color(0xFFD9C7DF),
+                0.4f to Color(0xFF99C4EF),
+                3.0f to Color(0xFFD9C7DF)
+            )
+        )
+        */
 
     Canvas(
         modifier = modifier
@@ -78,36 +97,40 @@ fun CircularSlider(
                 val y = it.y
                 val offset = Offset(x, y)
                 when (it.action) {
+
                     MotionEvent.ACTION_DOWN -> {
                         val d = distance(offset, center)
                         val a = angle(center, offset)
-                        if (d >= radius - touchStroke / 2f && d <= radius + touchStroke / 2f && a !in -120f..-60f) {
-                            down = true
+                        if (d >= radius - touchStroke / 2f && d <= radius + touchStroke / 2f) {
+                            nearTheThumbIndicator = true
                             angle = a
                         } else {
-                            down = false
+                            nearTheThumbIndicator = false
                         }
                     }
+
                     MotionEvent.ACTION_MOVE -> {
-                        if (down) {
+                        if (nearTheThumbIndicator) {
                             angle = angle(center, offset)
                         }
                     }
+
                     MotionEvent.ACTION_UP -> {
-                        down = false
+                        nearTheThumbIndicator = false
                     }
+
                     else -> return@pointerInteropFilter false
                 }
                 return@pointerInteropFilter true
             }
     ) {
-        // Draw background arc
+
         drawArc(
-            color = backgroundColor,
-            startAngle = -240f,
-            sweepAngle = 300f,
+            brush = gradient,
+            startAngle = 0f,
+            sweepAngle = 360f,
             topLeft = center - Offset(radius, radius),
-            size = Size(radius * 2, radius * 2), // Ensure size is always circular
+            size = Size(radius * 2, radius * 2),
             useCenter = false,
             style = Stroke(
                 width = stroke,
@@ -115,44 +138,26 @@ fun CircularSlider(
             )
         )
 
-        // Draw progress arc
-        drawArc(
-            color = progressColor,
-            startAngle = 120f,
-            sweepAngle = appliedAngle,
-            topLeft = center - Offset(radius, radius),
-            size = Size(radius * 2, radius * 2), // Ensure size is always circular
-            useCenter = false,
-            style = Stroke(
-                width = stroke,
-                cap = cap
-            )
-        )
-
-        // Draw the thumb circle
+        // Draw the border of the thumb
         drawCircle(
-            color = thumbColor,
-            radius = stroke,
+            color = Color.White, // Border color
+            radius = 34f, // Slightly larger radius for border
             center = center + Offset(
-                radius * cos((120 + appliedAngle) * PI / 180f).toFloat(),
-                radius * sin((120 + appliedAngle) * PI / 180f).toFloat()
+                radius * cos((-180 + appliedAngle) * PI / 180f).toFloat(),
+                radius * sin((-180 + appliedAngle) * PI / 180f).toFloat()
             )
         )
 
-        if (debug) {
-            drawCircle(
-                color = Color.Red,
-                center = center,
-                radius = radius + stroke / 2f,
-                style = Stroke(2f)
+// Draw the inner part of the thumb
+        drawCircle(
+            color = Color(0xFF6F1D61), // Inner color of the thumb
+            radius = 30f,
+            center = center + Offset(
+                radius * cos((-180 + appliedAngle) * PI / 180f).toFloat(),
+                radius * sin((-180 + appliedAngle) * PI / 180f).toFloat()
             )
-            drawCircle(
-                color = Color.Red,
-                center = center,
-                radius = radius - stroke / 2f,
-                style = Stroke(2f)
-            )
-        }
+        )
+
     }
 }
 

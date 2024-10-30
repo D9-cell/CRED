@@ -49,6 +49,7 @@ import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.res.colorResource
 import androidx.compose.ui.res.painterResource
 import androidx.compose.ui.text.font.FontWeight
+import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.unit.dp
 
 @Composable
@@ -614,11 +615,11 @@ fun FirstScreen() {
     }
 }
 
-//@Preview(showBackground = true)
-//@Composable
-//fun PreviewFirstScreen() {
-//    FirstScreen()
-//}
+@Preview(showBackground = true)
+@Composable
+fun PreviewFirstScreen() {
+    FirstScreen()
+}
 
 @Composable
 fun CustomScrollableCards() {
